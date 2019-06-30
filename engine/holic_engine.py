@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 import chess
 
 from engine.consts import PAWN_TABLE, KNIGHT_TABLE, BISHOP_TABLE, ROOK_TABLE, QUEEN_TABLE, KING_TABLE
+from engine.caching import PositionCache
 
 
 WHITE = 'WHITE'
@@ -10,6 +11,10 @@ BLACK = 'BLACK'
 
 
 class GameEngine:
+
+    __slots__ = ('_color', 'board', 'PAWN_VALUE', 'KNIGHT_VALUE', 'BISHOP_VALUE', 'ROOK_VALUE',
+                 'QUEEN_VALUE', 'PAWN_TABLE', 'KNIGHT_TABLE', 'BISHOP_TABLE', 'ROOK_TABLE',
+                 'QUEEN_TABLE', 'KING_TABLE', 'move_history', 'position_cache')
 
     def __init__(self, engine_color: str = WHITE, pawn_value: int = 100, knight_value: int = 280,
                  bishop_value: int = 320, rook_value: int = 500, queen_value: int = 900,):
@@ -30,6 +35,7 @@ class GameEngine:
         self.KING_TABLE = KING_TABLE
 
         self.move_history = []
+        self.position_cache = PositionCache()
 
     def is_engine_turn(self):
         if self._color == WHITE:
@@ -82,8 +88,14 @@ class GameEngine:
         return pos_score
 
     def eval_board(self) -> int:
+        fen = self.board.fen()
+        score = self.position_cache.get_position(fen)
+        if score:
+            self.position_cache.add_to_cache(fen, score)
+            return score
         check, score = self.is_checkmate()
         if check:
+            self.position_cache.add_to_cache(fen, score)
             return score
         stale, score = self.is_stalemate()
         if stale:
@@ -92,7 +104,9 @@ class GameEngine:
         pos_score = self._calculate_position()
         total_score = material + pos_score
         if self._color == WHITE:
+            self.position_cache.add_to_cache(fen, score)
             return total_score
+        self.position_cache.add_to_cache(fen, score)
         return -total_score
 
     def quiesce(self, alpha, beta):
