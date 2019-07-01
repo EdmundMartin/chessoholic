@@ -1,13 +1,18 @@
-from engine.holic_engine import GameEngine
+import time
+
+from engine.holic_engine import PyGameEngine
+#from engine.cy_holic_engine import CyGameEngine
 
 
 if __name__ == '__main__':
     turn = 'CPU'
-    game = GameEngine()
+    game = PyGameEngine()
     while True:
         if turn == 'CPU':
-            mov = game.select_move(4)
+            start = time.time()
+            mov = game.select_move(2)
             print(mov)
+            print('Move took: ', time.time() - start)
             game.board.push(mov)
             turn = 'Human'
         else:
@@ -15,7 +20,7 @@ if __name__ == '__main__':
             while True:
                 try:
                     valid_move = input('Enter Move:')
-                    mov = game.board.push_san(valid_move)
+                    mov = game.board.push_uci(valid_move)
                 except Exception as e:
                     print('Invalid move')
                 else:

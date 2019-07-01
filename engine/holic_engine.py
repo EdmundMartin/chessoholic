@@ -10,7 +10,7 @@ WHITE = 'WHITE'
 BLACK = 'BLACK'
 
 
-class GameEngine:
+class PyGameEngine:
 
     __slots__ = ('_color', 'board', 'PAWN_VALUE', 'KNIGHT_VALUE', 'BISHOP_VALUE', 'ROOK_VALUE',
                  'QUEEN_VALUE', 'PAWN_TABLE', 'KNIGHT_TABLE', 'BISHOP_TABLE', 'ROOK_TABLE',
@@ -104,9 +104,9 @@ class GameEngine:
         pos_score = self._calculate_position()
         total_score = material + pos_score
         if self._color == WHITE:
-            self.position_cache.add_to_cache(fen, score)
+            self.position_cache.add_to_cache(fen, total_score)
             return total_score
-        self.position_cache.add_to_cache(fen, score)
+        self.position_cache.add_to_cache(fen, -total_score)
         return -total_score
 
     def quiesce(self, alpha, beta):
