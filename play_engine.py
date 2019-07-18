@@ -10,10 +10,9 @@ if __name__ == '__main__':
     while True:
         if turn == 'CPU':
             start = time.time()
-            mov = game.select_move(2)
-            print(mov)
+            mov = game.select_move(4)
             print('Move took: ', time.time() - start)
-            game.board.push(mov)
+            game.board.push_uci(mov)
             turn = 'Human'
         else:
             print(game.board)

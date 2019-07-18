@@ -1,4 +1,5 @@
-from typing import List, Optional, Tuple
+from collections import Counter
+from typing import Tuple
 
 import chess
 
@@ -126,6 +127,16 @@ class PyGameEngine:
                     alpha = score
         return alpha
 
+    def trim_move_tree(self):
+        best_moves = {}
+        for move in self.board.legal_moves:
+            self.board.push(move)
+            move_score = self.eval_board()
+            self.board.pop()
+            best_moves[str(move)] = move_score
+        best = sorted(best_moves.keys(), key=lambda x: x[1], reverse=True)
+        return best
+
     def alpha_beta(self, alpha, beta, depth_left: int):
         best_score = -9999
         if depth_left == 0:
@@ -142,13 +153,14 @@ class PyGameEngine:
                 alpha = score
         return best_score
 
-    def select_move(self, depth):
+    def select_move(self, depth, max_lines=5):
         best_move = chess.Move.null()
         best_value = -99999
         alpha = -100000
         beta = 100000
-        for move in self.board.legal_moves:
-            self.board.push(move)
+        trimmed_moves = self.trim_move_tree()[:max_lines]
+        for move in trimmed_moves:
+            self.board.push_uci(move)
             board_value = -self.alpha_beta(-beta, -alpha, depth - 1)
             if board_value > best_value:
                 best_value = board_value
@@ -158,10 +170,3 @@ class PyGameEngine:
             self.board.pop()
         self.move_history.append(best_move)
         return best_move
-
-
-if __name__ == '__main__':
-    engine = GameEngine()
-
-    result = engine.eval_board()
-    print(result)
